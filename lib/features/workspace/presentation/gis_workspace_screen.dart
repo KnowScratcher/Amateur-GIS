@@ -9,7 +9,6 @@ import 'package:amateur_gis/features/map_canvas/presentation/map_render_zone.dar
 import 'package:amateur_gis/features/layers/presentation/layers_sidebar_panel.dart';
 import 'package:flutter_map_geojson2/flutter_map_geojson2.dart';
 import 'package:amateur_gis/features/map_canvas/presentation/components/navigation_cluster.dart';
-import 'package:amateur_gis/features/map_canvas/background/isolates/geojson_parser_isolate.dart';
 
 class GisMainWorkspace extends StatefulWidget {
   const GisMainWorkspace({super.key});
@@ -33,7 +32,10 @@ class _GisMainWorkspaceState extends State<GisMainWorkspace> {
     try {
       final FilePickerResult? pickerResult = await FilePicker.pickFiles(
         type: FileType.custom,
-        allowedExtensions: ['json', 'geojson'], // Enforce rigid geographic text formats
+        allowedExtensions: [
+          'json',
+          'geojson',
+        ], // Enforce rigid geographic text formats
       );
 
       // Handle fallback scenario when users close the window without picking a target path
@@ -41,24 +43,19 @@ class _GisMainWorkspaceState extends State<GisMainWorkspace> {
         return;
       }
 
+      // Select file from local storage
       final String diskFilePath = pickerResult.files.single.path!;
       final File localFileNode = File(diskFilePath);
-
+      final GeoJsonLayer spatialFeatures = GeoJsonLayer.file(localFileNode);
       // Extract file name structure to apply as presentation text
       final String shortFileName = pickerResult.files.single.name;
 
-      // Read string content entirely from standard storage tracks
-      final String rawGeoJsonPayload = await localFileNode.readAsString();
-
-      // Dispatch block directly into processing isolates loop to isolate thread usage
-      final GeoJsonLayer spatialFeatures =
-      await GeoJsonParserIsolate.parseDataInBackground(rawGeoJsonPayload);
-
       setState(() {
         _layers.add(
-          LayerItem(
+          GeojsonLayerItem(
             id: DateTime.now().millisecondsSinceEpoch.toString(),
             name: shortFileName,
+            geojsonLayer: spatialFeatures,
           ),
         );
       });
@@ -85,6 +82,7 @@ class _GisMainWorkspaceState extends State<GisMainWorkspace> {
                   layers: _layers,
                   onLayersChanged: () => setState(() {}),
                   onImportDataset: _pickAndLoadGeoJsonFile,
+                  onInformationChanged: () => {},
                 ),
 
                 // Right Viewport: Isolated Map Canvas & Overlay Controls

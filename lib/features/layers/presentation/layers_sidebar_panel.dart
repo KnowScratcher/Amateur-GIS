@@ -6,12 +6,14 @@ class LayersSidebarPanel extends StatelessWidget {
   final List<LayerItem> layers;
   final VoidCallback onLayersChanged;
   final VoidCallback onImportDataset;
+  final VoidCallback onInformationChanged;
 
   const LayersSidebarPanel({
     super.key,
     required this.layers,
     required this.onLayersChanged,
     required this.onImportDataset,
+    required this.onInformationChanged,
   });
 
   @override
@@ -43,13 +45,17 @@ class LayersSidebarPanel extends StatelessWidget {
                 final layer = layers[index];
                 return ListTile(
                   key: ValueKey(layer.id),
-                  title: Text(layer.name, style: const TextStyle(fontSize: 13)),
-                  trailing: Checkbox(
+                  leading: Checkbox(
                     value: layer.isVisible,
                     onChanged: (value) {
                       layer.isVisible = value ?? false;
                       onLayersChanged();
                     },
+                  ),
+                  title: Text(layer.name, style: const TextStyle(fontSize: 13)),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: onInformationChanged,
                   ),
                 );
               },
