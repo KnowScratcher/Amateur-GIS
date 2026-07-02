@@ -3,15 +3,18 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:amateur_gis/features/layers/domain/layer_model.dart';
+import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:latlong2/latlong.dart';
 
 class MapCanvasRenderZone extends StatefulWidget {
   final List<LayerItem> activeLayers;
+  final AnimatedMapController mapController;
   final ValueChanged<LatLng> onPointerHover;
 
   const MapCanvasRenderZone({
     super.key,
     required this.activeLayers,
+    required this.mapController,
     required this.onPointerHover,
   });
 
@@ -50,13 +53,15 @@ class _MapCanvasRenderZoneState extends State<MapCanvasRenderZone> {
         ),
       ],
     ).then((value) {
+      // FIX: Guard the async gap check before referencing the build context tree
+      if (!mounted) return;
+
       if (value == 'copy') {
-        // Direct integration into OS clipboard platform channel data lines
         Clipboard.setData(ClipboardData(text: latLonString));
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Coordinates copied to clipboard'),
-            duration: Duration(seconds: 2),
+            duration: Duration(seconds: 1),
           ),
         );
       }
@@ -92,10 +97,12 @@ class _MapCanvasRenderZoneState extends State<MapCanvasRenderZone> {
       }
     }
     return FlutterMap(
+      mapController: widget.mapController.mapController,
       options: const MapOptions(
         initialCenter: LatLng(0.0, 0.0),
         initialZoom: 2,
         interactionOptions: InteractionOptions(
+          flingAnimationDampingRatio: 2,
           flags:
               InteractiveFlag.all &
               ~InteractiveFlag

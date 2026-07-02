@@ -5,14 +5,14 @@ import 'package:amateur_gis/features/layers/presentation/components/sidebar_head
 class LayersSidebarPanel extends StatelessWidget {
   final List<LayerItem> layers;
   final VoidCallback onLayersChanged;
-  final VoidCallback onImportDataset;
+  final VoidCallback onCreatePressed;
   final VoidCallback onInformationChanged;
 
   const LayersSidebarPanel({
     super.key,
     required this.layers,
     required this.onLayersChanged,
-    required this.onImportDataset,
+    required this.onCreatePressed,
     required this.onInformationChanged,
   });
 
@@ -29,7 +29,7 @@ class LayersSidebarPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SidebarHeader(onImportPressed: onImportDataset),
+          SidebarHeader(onCreatePressed: onCreatePressed),
           Expanded(
             child: ReorderableListView.builder(
               itemCount: layers.length,
