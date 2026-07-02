@@ -1,12 +1,14 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_geojson2/flutter_map_geojson2.dart';
 
 class LayerItem {
   final String id;
   final String name;
+  final String type;
   bool isVisible;
 
-  LayerItem({required this.id, required this.name, this.isVisible = true});
+  LayerItem({required this.id, required this.name, this.isVisible = true, required this.type});
 }
 
 class GeojsonLayerItem extends LayerItem {
@@ -16,6 +18,7 @@ class GeojsonLayerItem extends LayerItem {
     required super.id,
     required super.name,
     required this.geojsonLayer,
+    super.type = 'geojson',
   });
 }
 
@@ -30,15 +33,29 @@ class FeatureLayerItem extends LayerItem {
     this.markers = const [],
     this.polylines = const [],
     this.polygons = const [],
+    super.type = 'feature',
   });
 }
 
 class TileLayerItem extends LayerItem {
-  final TileLayer tileLayer;
+  final String provider;
 
   TileLayerItem({
     required super.id,
     required super.name,
-    required this.tileLayer,
+    required this.provider,
+    super.type = 'tile',
   });
+
+  late final TileLayer tileLayer = TileLayer(
+    urlTemplate: provider,
+    userAgentPackageName:
+    'AmateurGIS/1.0.0+1 (contact: ${dotenv.env["contact"]})',
+    tileProvider: NetworkTileProvider(
+      cachingProvider: BuiltInMapCachingProvider.getOrCreateInstance(
+        maxCacheSize: 1_000_000_000, // 1 GB is the default
+      ),
+    ),
+  );
+
 }

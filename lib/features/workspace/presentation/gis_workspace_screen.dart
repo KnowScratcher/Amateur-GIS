@@ -24,10 +24,10 @@ class _GisMainWorkspaceState extends State<GisMainWorkspace> with TickerProvider
   late final AnimatedMapController _mapController = AnimatedMapController(vsync: this);
   // Mock layer state
   final List<LayerItem> _layers = [
-    LayerItem(id: '1', name: 'Roads Network (Vector)'),
-    LayerItem(id: '2', name: 'Hydrography / Lakes'),
-    LayerItem(id: '3', name: 'Satellite Base Imagery'),
-    LayerItem(id: '4', name: 'Digital Elevation Model (DEM)'),
+    FeatureLayerItem(id: '1', name: 'Roads Network (Vector)'),
+    FeatureLayerItem(id: '2', name: 'Hydrography / Lakes'),
+    TileLayerItem(id: '3', name: 'Satellite Base Imagery', provider: "http://mt0.google.com/vt/lyrs=s&hl=en&x={x}&y={y}&z={z}"),
+    TileLayerItem(id: '4', name: 'Digital Elevation Model (DEM)', provider: ""),
   ];
 
   String _cursorCoordinates = 'Lat: 0.00000, Lon: 0.00000';

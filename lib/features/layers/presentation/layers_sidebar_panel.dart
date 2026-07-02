@@ -16,6 +16,22 @@ class LayersSidebarPanel extends StatelessWidget {
     required this.onInformationChanged,
   });
 
+  Icon getLayerIcon(LayerItem layer) {
+    if (layer.type == 'tile') {
+      return const Icon(Icons.map, size: 16, color: Colors.white70);
+    } else if (layer.type == 'feature') {
+      return const Icon(
+        Icons.polyline_outlined,
+        size: 16,
+        color: Colors.white70,
+      );
+    } else if (layer.type == 'geojson') {
+      return const Icon(Icons.code, size: 16, color: Colors.white70);
+    } else {
+      return const Icon(Icons.question_mark, size: 16, color: Colors.white70);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -45,17 +61,23 @@ class LayersSidebarPanel extends StatelessWidget {
                 final layer = layers[index];
                 return ListTile(
                   key: ValueKey(layer.id),
-                  leading: Checkbox(
-                    value: layer.isVisible,
-                    onChanged: (value) {
-                      layer.isVisible = value ?? false;
-                      onLayersChanged();
-                    },
-                  ),
+                  leading: getLayerIcon(layer),
                   title: Text(layer.name, style: const TextStyle(fontSize: 13)),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.edit),
-                    onPressed: onInformationChanged,
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Checkbox(
+                        value: layer.isVisible,
+                        onChanged: (value) {
+                          layer.isVisible = value ?? false;
+                          onLayersChanged();
+                        },
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.edit),
+                        onPressed: onInformationChanged,
+                      ),
+                    ],
                   ),
                 );
               },
