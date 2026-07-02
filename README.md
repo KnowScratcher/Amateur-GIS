@@ -1,5 +1,8 @@
 # Amateur GIS
 
+> [!IMPORTANT]
+> This project is now developing and not yet ready for use.
+
 > *Because QGIS is really painful for amateurs.*
 
 **Amateur GIS** is a streamlined Geographic Information System designed for simplicity. While professional tools like QGIS can be overwhelming for beginners, this application provides an intuitive, modular workspace for visualizing and managing spatial data without the steep learning curve.
