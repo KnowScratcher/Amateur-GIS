@@ -13,6 +13,10 @@ import 'package:flutter_map_geojson2/flutter_map_geojson2.dart';
 import 'package:amateur_gis/features/map_canvas/presentation/components/navigation_cluster.dart';
 import 'package:latlong2/latlong.dart';
 
+/// The main workspace screen for the Amateur GIS application.
+///
+/// This screen coordinates the top menu, the layer management sidebar,
+/// the central map canvas, and the bottom status bar.
 class GisMainWorkspace extends StatefulWidget {
   const GisMainWorkspace({super.key});
 
@@ -20,18 +24,26 @@ class GisMainWorkspace extends StatefulWidget {
   State<GisMainWorkspace> createState() => _GisMainWorkspaceState();
 }
 
-class _GisMainWorkspaceState extends State<GisMainWorkspace> with TickerProviderStateMixin{
+class _GisMainWorkspaceState extends State<GisMainWorkspace> with TickerProviderStateMixin {
+  /// Controller used to animate map movements and interactions.
   late final AnimatedMapController _mapController = AnimatedMapController(vsync: this);
-  // Mock layer state
+
+  /// The list of layers currently managed in this workspace.
   final List<LayerItem> _layers = [
     FeatureLayerItem(id: '1', name: 'Roads Network (Vector)'),
     FeatureLayerItem(id: '2', name: 'Hydrography / Lakes'),
-    TileLayerItem(id: '3', name: 'Satellite Base Imagery', provider: "http://mt0.google.com/vt/lyrs=s&hl=en&x={x}&y={y}&z={z}"),
+    TileLayerItem(
+      id: '3',
+      name: 'Satellite Base Imagery',
+      provider: "http://mt0.google.com/vt/lyrs=s&hl=en&x={x}&y={y}&z={z}",
+    ),
     TileLayerItem(id: '4', name: 'Digital Elevation Model (DEM)', provider: ""),
   ];
 
+  /// The placeholder for current geographic coordinates under the mouse cursor.
   String _cursorCoordinates = 'Lat: 0.00000, Lon: 0.00000';
 
+  /// Displays a modal dialog allowing the user to select a new layer type to add.
   void _showCreateLayerModal() {
     showDialog<String>(
       context: context,
@@ -54,7 +66,6 @@ class _GisMainWorkspaceState extends State<GisMainWorkspace> with TickerProvider
           ),
           content: SizedBox(
             width: 400,
-            // Explicit layout ceiling constraints optimized for desktop views
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -65,34 +76,31 @@ class _GisMainWorkspaceState extends State<GisMainWorkspace> with TickerProvider
                 ),
                 const SizedBox(height: 16),
 
-                // 1. Tile Layer Selection Option
+                // Tile Layer Selection Option
                 _buildLayerTypeOption(
                   context: dialogContext,
                   title: 'Raster Tile Layer',
-                  subtitle:
-                      'Load map imagery slices from remote web servers (XYZ / WMS)',
+                  subtitle: 'Load map imagery slices from remote web servers (XYZ / WMS)',
                   icon: Icons.map,
                   value: 'tile',
                 ),
                 const SizedBox(height: 10),
 
-                // 2. Feature Layer Selection Option
+                // Feature Layer Selection Option
                 _buildLayerTypeOption(
                   context: dialogContext,
                   title: 'Feature Vector Layer',
-                  subtitle:
-                      'Instantiate custom data nodes, line strings, and bounding shapes',
+                  subtitle: 'Instantiate custom data nodes, line strings, and bounding shapes',
                   icon: Icons.polyline_outlined,
                   value: 'feature',
                 ),
                 const SizedBox(height: 10),
 
-                // 3. GeoJSON Selection Option
+                // GeoJSON Selection Option
                 _buildLayerTypeOption(
                   context: dialogContext,
                   title: 'GeoJSON Data Source',
-                  subtitle:
-                      'Import complex vector coordinates directly from a local static file',
+                  subtitle: 'Import complex vector coordinates directly from a local static file',
                   icon: Icons.code,
                   value: 'geojson',
                 ),
@@ -113,14 +121,14 @@ class _GisMainWorkspaceState extends State<GisMainWorkspace> with TickerProvider
     ).then((String? selectedType) {
       if (selectedType == null) return;
 
-      // Verification check confirming hook interception
       debugPrint('User initiated step 2 pipeline for type: $selectedType');
 
-      // The configuration flow pauses here as requested.
-      // Next, we will direct specific workflows based on the selected string type value.
+      // TODO: The configuration flow pauses here as requested.
+      // TODO: Next, we will direct specific workflows based on the selected string type value.
     });
   }
 
+  /// Builds a clickable option for the layer creation modal.
   Widget _buildLayerTypeOption({
     required BuildContext context,
     required String title,
@@ -169,14 +177,12 @@ class _GisMainWorkspaceState extends State<GisMainWorkspace> with TickerProvider
     );
   }
 
+  /// Opens a file picker to select a GeoJSON file and adds it as a new layer.
   Future<void> _pickAndLoadGeoJsonFile() async {
     try {
       final FilePickerResult? pickerResult = await FilePicker.pickFiles(
         type: FileType.custom,
-        allowedExtensions: [
-          'json',
-          'geojson',
-        ], // Enforce rigid geographic text formats
+        allowedExtensions: ['json', 'geojson'],
       );
 
       // Handle fallback scenario when users close the window without picking a target path
@@ -210,15 +216,12 @@ class _GisMainWorkspaceState extends State<GisMainWorkspace> with TickerProvider
     return Scaffold(
       body: Column(
         children: [
-          // 1. Top Menu Bar
           const TopMenuBar(),
-
-          // 2. Main Workspace Split View
           Expanded(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Left Sidebar: Layer Panel (Fixed Width for Desktop)
+                // Left Viewport: Layers
                 LayersSidebarPanel(
                   layers: _layers,
                   onLayersChanged: () => setState(() {}),
@@ -226,11 +229,10 @@ class _GisMainWorkspaceState extends State<GisMainWorkspace> with TickerProvider
                   onInformationChanged: () => {},
                 ),
 
-                // Right Viewport: Isolated Map Canvas & Overlay Controls
+                // Right Viewport: Map Canvas & Overlay Controls
                 Expanded(
                   child: Stack(
                     children: [
-                      // Critical Optimization: RepaintBoundary isolates heavy map painting
                       Positioned.fill(
                         child: RepaintBoundary(
                           child: MapCanvasRenderZone(
@@ -260,7 +262,7 @@ class _GisMainWorkspaceState extends State<GisMainWorkspace> with TickerProvider
             ),
           ),
 
-          // 3. Bottom Status Bar
+          // Bottom Status Bar
           StatusBar(cursorCoordinates: _cursorCoordinates),
         ],
       ),

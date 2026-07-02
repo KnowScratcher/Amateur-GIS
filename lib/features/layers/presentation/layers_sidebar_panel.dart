@@ -2,12 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:amateur_gis/features/layers/domain/layer_model.dart';
 import 'package:amateur_gis/features/layers/presentation/components/sidebar_header.dart';
 
+/// A sidebar panel that displays and manages map layers.
+///
+/// This widget provides a list of layers that can be reordered using drag-and-drop,
+/// toggled for visibility, and edited via the information button.
 class LayersSidebarPanel extends StatelessWidget {
+  /// The list of layers currently available in the map.
   final List<LayerItem> layers;
+
+  /// Callback triggered whenever the layers list is modified or visibility changes.
   final VoidCallback onLayersChanged;
+
+  /// Callback triggered when the create button in the [SidebarHeader] is pressed.
   final VoidCallback onCreatePressed;
+
+  /// Callback triggered when a layer's edit/information button is pressed.
   final VoidCallback onInformationChanged;
 
+  /// Creates a [LayersSidebarPanel] to manage [layers].
   const LayersSidebarPanel({
     super.key,
     required this.layers,
@@ -16,6 +28,9 @@ class LayersSidebarPanel extends StatelessWidget {
     required this.onInformationChanged,
   });
 
+  /// Determines the appropriate icon to display for a [layer] based on its type.
+  ///
+  /// Supported types include 'tile', 'feature', and 'geojson'.
   Icon getLayerIcon(LayerItem layer) {
     if (layer.type == 'tile') {
       return const Icon(Icons.map, size: 16, color: Colors.white70);

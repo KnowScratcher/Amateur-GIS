@@ -1,6 +1,50 @@
 # Amateur GIS
 
-qGIS is really painful for amateurs.
+> *Because QGIS is really painful for amateurs.*
 
-So this is a Geographic Information System for amateurs.
+**Amateur GIS** is a streamlined Geographic Information System designed for simplicity. While professional tools like QGIS can be overwhelming for beginners, this application provides an intuitive, modular workspace for visualizing and managing spatial data without the steep learning curve.
+
+Built with Flutter, it offers a high-performance desktop experience for interacting with various map data formats.
+
+## Key Features
+
+- **Interactive Map Canvas**: Smooth navigation, zooming, and coordinate tracking (EPSG:4326).
+- **Layer Management**: A dedicated sidebar to reorder, toggle visibility, and manage different layer types.
+- **Multi-Source Support**:
+    - **Raster Tiles**: Load imagery from XYZ providers (e.g., Google Satellite).
+    - **GeoJSON**: Import complex vector data from local files.
+    - **Feature Layers**: Manage custom markers, polylines, and polygons.
+- **Desktop-First UI**: Dark-themed workspace optimized for desktop GIS workflows, featuring context menus and floating navigation controls.
+
+## Getting Started
+
+### Prerequisites
+- [Flutter SDK](https://docs.flutter.dev/get-started/install)
+- A `.env` file in `assets/` with a `contact` field (used for Map Tile user-agent, required if using OpenStreetMap tile server).
+
+### Installation
+
+#### Ready to use binary
+Download the compiled binary from [Release](https://github.com/KnowScratcher/Amateur-GIS/releases)
+
+#### Compile locally
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/KnowScratcher/amateur-gis.git
+   cd amateur_gis
+   ```
+2. Install dependencies:
+   ```bash
+   flutter pub get
+   ```
+3. Run the application:
+   ```bash
+   flutter run -d windows # or macos / linux
+   ```
+
+## Documentation
+
+For a detailed walkthrough of the internal architecture, components, and data models, please refer to [**docs.md**](./docs.md).
+
+---
 
