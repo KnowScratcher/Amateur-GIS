@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 class SidebarHeader extends StatelessWidget {
-  final VoidCallback onImportPressed;
+  final VoidCallback onCreatePressed;
 
-  const SidebarHeader({super.key, required this.onImportPressed});
+  const SidebarHeader({super.key, required this.onCreatePressed});
 
   @override
   Widget build(BuildContext themeContext) {
@@ -18,8 +18,8 @@ class SidebarHeader extends StatelessWidget {
           ),
           IconButton(
             icon: const Icon(Icons.add_box, size: 18),
-            onPressed: onImportPressed, // Trigger local file picker
-            tooltip: 'Import Spatial Dataset',
+            onPressed: onCreatePressed, // Trigger local file picker
+            tooltip: 'Create New Layer',
           ),
         ],
       ),

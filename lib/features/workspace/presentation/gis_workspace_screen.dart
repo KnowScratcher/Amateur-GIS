@@ -7,6 +7,8 @@ import 'package:amateur_gis/widgets/top_menu_bar.dart';
 import 'package:amateur_gis/features/layers/domain/layer_model.dart';
 import 'package:amateur_gis/features/map_canvas/presentation/map_render_zone.dart';
 import 'package:amateur_gis/features/layers/presentation/layers_sidebar_panel.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:flutter_map_geojson2/flutter_map_geojson2.dart';
 import 'package:amateur_gis/features/map_canvas/presentation/components/navigation_cluster.dart';
 import 'package:latlong2/latlong.dart';
@@ -18,7 +20,8 @@ class GisMainWorkspace extends StatefulWidget {
   State<GisMainWorkspace> createState() => _GisMainWorkspaceState();
 }
 
-class _GisMainWorkspaceState extends State<GisMainWorkspace> {
+class _GisMainWorkspaceState extends State<GisMainWorkspace> with TickerProviderStateMixin{
+  late final AnimatedMapController _mapController = AnimatedMapController(vsync: this);
   // Mock layer state
   final List<LayerItem> _layers = [
     LayerItem(id: '1', name: 'Roads Network (Vector)'),
@@ -28,6 +31,143 @@ class _GisMainWorkspaceState extends State<GisMainWorkspace> {
   ];
 
   String _cursorCoordinates = 'Lat: 0.00000, Lon: 0.00000';
+
+  void _showCreateLayerModal() {
+    showDialog<String>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF252526),
+          title: const Row(
+            children: [
+              Icon(Icons.layers_outlined, color: Colors.blue, size: 22),
+              SizedBox(width: 10),
+              Text(
+                'Create New Layer',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+          content: SizedBox(
+            width: 400,
+            // Explicit layout ceiling constraints optimized for desktop views
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Select the spatial layer source format type you want to instantiate in your current workspace:',
+                  style: TextStyle(fontSize: 13, color: Colors.white70),
+                ),
+                const SizedBox(height: 16),
+
+                // 1. Tile Layer Selection Option
+                _buildLayerTypeOption(
+                  context: dialogContext,
+                  title: 'Raster Tile Layer',
+                  subtitle:
+                      'Load map imagery slices from remote web servers (XYZ / WMS)',
+                  icon: Icons.map,
+                  value: 'tile',
+                ),
+                const SizedBox(height: 10),
+
+                // 2. Feature Layer Selection Option
+                _buildLayerTypeOption(
+                  context: dialogContext,
+                  title: 'Feature Vector Layer',
+                  subtitle:
+                      'Instantiate custom data nodes, line strings, and bounding shapes',
+                  icon: Icons.polyline_outlined,
+                  value: 'feature',
+                ),
+                const SizedBox(height: 10),
+
+                // 3. GeoJSON Selection Option
+                _buildLayerTypeOption(
+                  context: dialogContext,
+                  title: 'GeoJSON Data Source',
+                  subtitle:
+                      'Import complex vector coordinates directly from a local static file',
+                  icon: Icons.code,
+                  value: 'geojson',
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text(
+                'Cancel',
+                style: TextStyle(color: Colors.purple[30], fontSize: 13),
+              ),
+            ),
+          ],
+        );
+      },
+    ).then((String? selectedType) {
+      if (selectedType == null) return;
+
+      // Verification check confirming hook interception
+      debugPrint('User initiated step 2 pipeline for type: $selectedType');
+
+      // The configuration flow pauses here as requested.
+      // Next, we will direct specific workflows based on the selected string type value.
+    });
+  }
+
+  Widget _buildLayerTypeOption({
+    required BuildContext context,
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required String value,
+  }) {
+    return InkWell(
+      onTap: () => Navigator.pop(context, value),
+      borderRadius: BorderRadius.circular(6),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          border: Border.all(color: const Color(0xFF3F3F46)),
+          borderRadius: BorderRadius.circular(6),
+          color: const Color(0xFF1E1E1E),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 24, color: Colors.white70),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(fontSize: 11, color: Colors.white30),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right, size: 16, color: Colors.white30),
+          ],
+        ),
+      ),
+    );
+  }
 
   Future<void> _pickAndLoadGeoJsonFile() async {
     try {
@@ -82,7 +222,7 @@ class _GisMainWorkspaceState extends State<GisMainWorkspace> {
                 LayersSidebarPanel(
                   layers: _layers,
                   onLayersChanged: () => setState(() {}),
-                  onImportDataset: _pickAndLoadGeoJsonFile,
+                  onCreatePressed: _showCreateLayerModal,
                   onInformationChanged: () => {},
                 ),
 
@@ -95,6 +235,7 @@ class _GisMainWorkspaceState extends State<GisMainWorkspace> {
                         child: RepaintBoundary(
                           child: MapCanvasRenderZone(
                             activeLayers: _layers,
+                            mapController: _mapController,
                             onPointerHover: (LatLng position) {
                               setState(() {
                                 _cursorCoordinates =
@@ -110,7 +251,7 @@ class _GisMainWorkspaceState extends State<GisMainWorkspace> {
                       Positioned(
                         top: 20,
                         right: 20,
-                        child: NavigationCluster(),
+                        child: NavigationCluster(animatedMapController: _mapController),
                       ),
                     ],
                   ),
