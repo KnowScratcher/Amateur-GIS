@@ -1,22 +1,76 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:amateur_gis/features/layers/domain/layer_model.dart';
 import 'package:latlong2/latlong.dart';
 
-class MapCanvasRenderZone extends StatelessWidget {
+class MapCanvasRenderZone extends StatefulWidget {
   final List<LayerItem> activeLayers;
+  final ValueChanged<LatLng> onPointerHover;
 
-  const MapCanvasRenderZone({super.key, required this.activeLayers});
+  const MapCanvasRenderZone({
+    super.key,
+    required this.activeLayers,
+    required this.onPointerHover,
+  });
 
   @override
-  Widget build(BuildContext themeContext) {
-    final List<Polyline> allPolylines = [];
+  State<MapCanvasRenderZone> createState() => _MapCanvasRenderZoneState();
+}
+
+class _MapCanvasRenderZoneState extends State<MapCanvasRenderZone> {
+  LatLng _currentGeoPosition = const LatLng(0.0, 0.0);
+
+  void _showContextMenu(BuildContext context, Offset globalPosition) {
+    final RenderBox overlay =
+        Overlay.of(context).context.findRenderObject() as RenderBox;
+
+    // Format the string for copy operation
+    final String latLonString =
+        '${_currentGeoPosition.latitude.toStringAsFixed(5)}, ${_currentGeoPosition.longitude.toStringAsFixed(5)}';
+
+    showMenu(
+      context: context,
+      position: RelativeRect.fromRect(
+        globalPosition & const Size(50, 50), // Anchor rectangle at cursor point
+        Offset.zero & overlay.size,
+      ),
+      items: [
+        PopupMenuItem(
+          value: 'copy',
+          padding: EdgeInsets.all(10),
+          child: Row(
+            children: [
+              const Icon(Icons.copy, size: 16, color: Colors.white70),
+              const SizedBox(width: 10),
+              Expanded(child: Text('Copy $latLonString')),
+            ],
+          ),
+        ),
+      ],
+    ).then((value) {
+      if (value == 'copy') {
+        // Direct integration into OS clipboard platform channel data lines
+        Clipboard.setData(ClipboardData(text: latLonString));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Coordinates copied to clipboard'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final List<Widget> layers = [
       // OpenStreetMap raster tile layer
       TileLayer(
         urlTemplate: 'http://mt0.google.com/vt/lyrs=p&hl=en&x={x}&y={y}&z={z}',
-        userAgentPackageName: 'AmateurGIS/1.0.0+1 (contact: ${dotenv.env["contact"]})',
+        userAgentPackageName:
+            'AmateurGIS/1.0.0+1 (contact: ${dotenv.env["contact"]})',
         tileProvider: NetworkTileProvider(
           cachingProvider: BuiltInMapCachingProvider.getOrCreateInstance(
             maxCacheSize: 1_000_000_000, // 1 GB is the default
@@ -26,7 +80,7 @@ class MapCanvasRenderZone extends StatelessWidget {
     ];
 
     // Convert parsed background coordinates into flutter_map Polyline instances
-    for (final layer in activeLayers) {
+    for (final layer in widget.activeLayers) {
       if (!layer.isVisible) continue;
 
       if (layer is GeojsonLayerItem) {
@@ -48,7 +102,35 @@ class MapCanvasRenderZone extends StatelessWidget {
                   .rotate, // Disable rotation for standard desktop workflows
         ),
       ),
-      children: layers,
+      children: [
+        ...layers,
+        Positioned.fill(
+          child: Builder(
+            builder: (mapContext) {
+              return GestureDetector(
+                // Detect right-click release actions on desktop system nodes
+                onSecondaryTapUp: (details) {
+                  _showContextMenu(context, details.globalPosition);
+                },
+                child: MouseRegion(
+                  onHover: (PointerHoverEvent event) {
+                    // Access the active map camera context configuration
+                    final camera = MapCamera.of(mapContext);
+
+                    // FIX: Use offsetToLatLng instead of pointToLatLng
+                    _currentGeoPosition = camera.screenOffsetToLatLng(
+                      Offset(event.localPosition.dx, event.localPosition.dy),
+                    );
+
+                    // Bubble the accurate coordinates back up to the workspace screen state
+                    widget.onPointerHover(_currentGeoPosition);
+                  },
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }

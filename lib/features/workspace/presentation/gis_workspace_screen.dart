@@ -9,6 +9,7 @@ import 'package:amateur_gis/features/map_canvas/presentation/map_render_zone.dar
 import 'package:amateur_gis/features/layers/presentation/layers_sidebar_panel.dart';
 import 'package:flutter_map_geojson2/flutter_map_geojson2.dart';
 import 'package:amateur_gis/features/map_canvas/presentation/components/navigation_cluster.dart';
+import 'package:latlong2/latlong.dart';
 
 class GisMainWorkspace extends StatefulWidget {
   const GisMainWorkspace({super.key});
@@ -87,32 +88,31 @@ class _GisMainWorkspaceState extends State<GisMainWorkspace> {
 
                 // Right Viewport: Isolated Map Canvas & Overlay Controls
                 Expanded(
-                  child: MouseRegion(
-                    onHover: (event) {
-                      // Simulating localized event updates
-                      setState(() {
-                        _cursorCoordinates =
-                            'Lat: ${(23.5 - event.localPosition.dy * 0.01).toStringAsFixed(5)}, '
-                            'Lon: ${(120.4 + event.localPosition.dx * 0.01).toStringAsFixed(5)}';
-                      });
-                    },
-                    child: Stack(
-                      children: [
-                        // Critical Optimization: RepaintBoundary isolates heavy map painting
-                        Positioned.fill(
-                          child: RepaintBoundary(
-                            child: MapCanvasRenderZone(activeLayers: _layers),
+                  child: Stack(
+                    children: [
+                      // Critical Optimization: RepaintBoundary isolates heavy map painting
+                      Positioned.fill(
+                        child: RepaintBoundary(
+                          child: MapCanvasRenderZone(
+                            activeLayers: _layers,
+                            onPointerHover: (LatLng position) {
+                              setState(() {
+                                _cursorCoordinates =
+                                    'Lat: ${position.latitude.toStringAsFixed(5)}, '
+                                    'Lon: ${position.longitude.toStringAsFixed(5)}';
+                              });
+                            },
                           ),
                         ),
+                      ),
 
-                        // Floating Navigation Cluster
-                        Positioned(
-                          top: 20,
-                          right: 20,
-                          child: NavigationCluster(),
-                        ),
-                      ],
-                    ),
+                      // Floating Navigation Cluster
+                      Positioned(
+                        top: 20,
+                        right: 20,
+                        child: NavigationCluster(),
+                      ),
+                    ],
                   ),
                 ),
               ],
