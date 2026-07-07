@@ -70,19 +70,19 @@ class _MapCanvasRenderZoneState extends State<MapCanvasRenderZone> {
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> layers = [
-      // OpenStreetMap raster tile layer
-      TileLayer(
-        urlTemplate: 'http://mt0.google.com/vt/lyrs=p&hl=en&x={x}&y={y}&z={z}',
-        userAgentPackageName:
-            'AmateurGIS/1.0.0+1 (contact: ${dotenv.env["contact"]})',
-        tileProvider: NetworkTileProvider(
-          cachingProvider: BuiltInMapCachingProvider.getOrCreateInstance(
-            maxCacheSize: 1_000_000_000, // 1 GB is the default
-          ),
-        ),
-      ),
-    ];
+    final List<Widget> layers = [];
+    //   // OpenStreetMap raster tile layer
+    //   TileLayer(
+    //     urlTemplate: 'http://mt0.google.com/vt/lyrs=p&hl=en&x={x}&y={y}&z={z}',
+    //     userAgentPackageName:
+    //         'AmateurGIS/1.0.0+1 (contact: ${dotenv.env["contact"]})',
+    //     tileProvider: NetworkTileProvider(
+    //       cachingProvider: BuiltInMapCachingProvider.getOrCreateInstance(
+    //         maxCacheSize: 1_000_000_000, // 1 GB is the default
+    //       ),
+    //     ),
+    //   ),
+    // ];
 
     // Convert parsed background coordinates into flutter_map Polyline instances
     for (final layer in widget.activeLayers) {

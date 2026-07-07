@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:amateur_gis/features/layers/presentation/create_layer_panel.dart';
+import 'package:amateur_gis/features/layers/presentation/tile_layer_editor.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:amateur_gis/widgets/status_bar.dart';
@@ -44,141 +46,61 @@ class _GisMainWorkspaceState extends State<GisMainWorkspace> with TickerProvider
   String _cursorCoordinates = 'Lat: 0.00000, Lon: 0.00000';
 
   /// Displays a modal dialog allowing the user to select a new layer type to add.
-  void _showCreateLayerModal() {
-    showDialog<String>(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          backgroundColor: const Color(0xFF252526),
-          title: const Row(
-            children: [
-              Icon(Icons.layers_outlined, color: Colors.blue, size: 22),
-              SizedBox(width: 10),
-              Text(
-                'Create New Layer',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-            ],
-          ),
-          content: SizedBox(
-            width: 400,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Select the spatial layer source format type you want to instantiate in your current workspace:',
-                  style: TextStyle(fontSize: 13, color: Colors.white70),
-                ),
-                const SizedBox(height: 16),
+  void _showCreateLayerModal() async {
+    bool workflowActive = true;
+    String currentScreen = 'panel'; // States: 'panel', 'tile'
 
-                // Tile Layer Selection Option
-                _buildLayerTypeOption(
-                  context: dialogContext,
-                  title: 'Raster Tile Layer',
-                  subtitle: 'Load map imagery slices from remote web servers (XYZ / WMS)',
-                  icon: Icons.map,
-                  value: 'tile',
-                ),
-                const SizedBox(height: 10),
-
-                // Feature Layer Selection Option
-                _buildLayerTypeOption(
-                  context: dialogContext,
-                  title: 'Feature Vector Layer',
-                  subtitle: 'Instantiate custom data nodes, line strings, and bounding shapes',
-                  icon: Icons.polyline_outlined,
-                  value: 'feature',
-                ),
-                const SizedBox(height: 10),
-
-                // GeoJSON Selection Option
-                _buildLayerTypeOption(
-                  context: dialogContext,
-                  title: 'GeoJSON Data Source',
-                  subtitle: 'Import complex vector coordinates directly from a local static file',
-                  icon: Icons.code,
-                  value: 'geojson',
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: Text(
-                'Cancel',
-                style: TextStyle(color: Colors.purple[30], fontSize: 13),
-              ),
-            ),
-          ],
+    while (workflowActive) {
+      if (currentScreen == 'panel') {
+        final String? selectedType = await showDialog<String>(
+          context: context,
+          builder: (BuildContext dialogContext) {
+            return CreateLayerPanel(dialogContext: dialogContext);
+          },
         );
-      },
-    ).then((String? selectedType) {
-      if (selectedType == null) return;
 
-      debugPrint('User initiated step 2 pipeline for type: $selectedType');
+        if (selectedType == null) {
+          workflowActive = false; // User closed modal via cancel button
+        } else if (selectedType == 'tile') {
+          currentScreen = 'tile'; // Progress forward
+        }
+      }
 
+      else if (currentScreen == 'tile') {
+        final dynamic result = await showDialog<dynamic>(
+          context: context,
+          builder: (BuildContext dialogContext) {
+            return TileLayerEditor(
+              onBackPressed: () {
+                Navigator.pop(dialogContext, 'go_back'); // Signal backward routing
+              },
+            );
+          },
+        );
+
+        if (result == null) {
+          workflowActive = false; // User dismissed window frame
+        } else if (result == 'go_back') {
+          currentScreen = 'panel'; // Return to selection screen stage
+        } else if (result is LayerItem) {
+          setState(() {
+            _layers.add(result);
+          });
+          workflowActive = false; // Core creation sequence finished successfully
+
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Successfully instantiated: ${result.name}')),
+          );
+        }
+      }
       // TODO: The configuration flow pauses here as requested.
       // TODO: Next, we will direct specific workflows based on the selected string type value.
-    });
-  }
-
-  /// Builds a clickable option for the layer creation modal.
-  Widget _buildLayerTypeOption({
-    required BuildContext context,
-    required String title,
-    required String subtitle,
-    required IconData icon,
-    required String value,
-  }) {
-    return InkWell(
-      onTap: () => Navigator.pop(context, value),
-      borderRadius: BorderRadius.circular(6),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          border: Border.all(color: const Color(0xFF3F3F46)),
-          borderRadius: BorderRadius.circular(6),
-          color: const Color(0xFF1E1E1E),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, size: 24, color: Colors.white70),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(fontSize: 11, color: Colors.white30),
-                  ),
-                ],
-              ),
-            ),
-            const Icon(Icons.chevron_right, size: 16, color: Colors.white30),
-          ],
-        ),
-      ),
-    );
+    }
   }
 
   /// Opens a file picker to select a GeoJSON file and adds it as a new layer.
-  Future<void> _pickAndLoadGeoJsonFile() async {
+  Future<void> _pickAndLoadGeoJsonFile() async { //TODO: Wait for geojson import functionality
     try {
       final FilePickerResult? pickerResult = await FilePicker.pickFiles(
         type: FileType.custom,
