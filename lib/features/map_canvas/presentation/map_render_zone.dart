@@ -85,7 +85,7 @@ class _MapCanvasRenderZoneState extends State<MapCanvasRenderZone> {
     // ];
 
     // Convert parsed background coordinates into flutter_map Polyline instances
-    for (final layer in widget.activeLayers) {
+    for (final layer in widget.activeLayers.reversed) {
       if (!layer.isVisible) continue;
 
       if (layer is GeojsonLayerItem) {
@@ -94,6 +94,8 @@ class _MapCanvasRenderZoneState extends State<MapCanvasRenderZone> {
         layers.add(MarkerLayer(markers: layer.markers));
         layers.add(PolylineLayer(polylines: layer.polylines));
         layers.add(PolygonLayer(polygons: layer.polygons));
+      } else if (layer is TileLayerItem) {
+        layers.add(layer.tileLayer);
       }
     }
     return FlutterMap(

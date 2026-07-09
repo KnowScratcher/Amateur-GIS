@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 class TileLayerEditor extends StatefulWidget {
   final VoidCallback? onBackPressed;
+
   const TileLayerEditor({super.key, this.onBackPressed});
 
   @override
@@ -29,9 +30,47 @@ class _TileLayerEditorModalState extends State<TileLayerEditor> {
       _selectedSource = sourceCode;
       if (sourceCode == 'osm') {
         _urlController.text = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
-      } else if (sourceCode == 'google') {
+      } else if (sourceCode == 'google_maps') {
         _urlController.text =
             'http://mt0.google.com/vt/lyrs=m&hl=en&x={x}&y={y}&z={z}';
+      } else if (sourceCode == 'google_satellite') {
+        _urlController.text =
+            'http://mt0.google.com/vt/lyrs=s&hl=en&x={x}&y={y}&z={z}';
+      } else if (sourceCode == 'google_terrain') {
+        _urlController.text =
+            'http://mt0.google.com/vt/lyrs=t&hl=en&x={x}&y={y}&z={z}';
+      } else if (sourceCode == 'google_mix') {
+        _urlController.text =
+            'http://mt0.google.com/vt/lyrs=y&hl=en&x={x}&y={y}&z={z}';
+      } else if (sourceCode == 'esri_wi') {
+        _urlController.text =
+            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+      } else if (sourceCode == 'esri_wtm') {
+        _urlController.text =
+            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}';
+      } else if (sourceCode == 'esri_ob') {
+        _urlController.text =
+            'https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}';
+      } else if (sourceCode == 'esri_wh') {
+        _urlController.text =
+            'https://server.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}';
+      } else if (sourceCode == 'esri_ngwm') {
+        _urlController.text =
+            'https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}';
+      } else if (sourceCode == 'esri_wgc') {
+        _urlController.text =
+            'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}';
+      } else if (sourceCode == 'cartodb_p') {
+        _urlController.text =
+            'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png';
+      } else if (sourceCode == 'cartodb_dm') {
+        _urlController.text =
+            'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png';
+      } else if (sourceCode == 'cartodv_v') {
+        _urlController.text =
+            'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png';
+      } else if (sourceCode == 'otm') {
+        _urlController.text = 'https://tile.opentopomap.org/{z}/{x}/{y}.png';
       } else if (sourceCode == 'custom') {
         _urlController.text = ''; // Clear for user input
       }
@@ -110,9 +149,58 @@ class _TileLayerEditorModalState extends State<TileLayerEditor> {
                       child: Text('OpenStreetMap Standard'),
                     ),
                     DropdownMenuItem(
-                      value: 'google',
+                      value: 'google_maps',
                       child: Text('Google Maps Road'),
                     ),
+                    DropdownMenuItem(
+                      value: 'google_satellite',
+                      child: Text('Google Maps Satellite only'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'google_terrain',
+                      child: Text('Google Maps Hillshade'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'google_mix',
+                      child: Text('Google Maps Satellite Road'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'esri_wi',
+                      child: Text('Esri World Imagery (Satellite)'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'esri_wtm',
+                      child: Text('Esri World Topographic Map'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'esri_ob',
+                      child: Text('Esri Ocean Basemap'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'esri_wh',
+                      child: Text('Esri World Hillshade'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'esri_ngwm',
+                      child: Text('Esri National Geographic World Map'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'esri_wgc',
+                      child: Text('Esri World Gray Canvas'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'cartodb_p',
+                      child: Text('CartoDB Positron (Light)'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'cartodb_dm',
+                      child: Text('CartoDB Dark Matter'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'cartodb_v',
+                      child: Text('CartoDB Voyager'),
+                    ),
+                    DropdownMenuItem(value: 'otm', child: Text('OpenTopoMap')),
                     DropdownMenuItem(
                       value: 'custom',
                       child: Text('Custom XYZ Server URL...'),

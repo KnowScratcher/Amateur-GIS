@@ -9,7 +9,6 @@ import 'package:amateur_gis/widgets/top_menu_bar.dart';
 import 'package:amateur_gis/features/layers/domain/layer_model.dart';
 import 'package:amateur_gis/features/map_canvas/presentation/map_render_zone.dart';
 import 'package:amateur_gis/features/layers/presentation/layers_sidebar_panel.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:flutter_map_geojson2/flutter_map_geojson2.dart';
 import 'package:amateur_gis/features/map_canvas/presentation/components/navigation_cluster.dart';
@@ -31,16 +30,7 @@ class _GisMainWorkspaceState extends State<GisMainWorkspace> with TickerProvider
   late final AnimatedMapController _mapController = AnimatedMapController(vsync: this);
 
   /// The list of layers currently managed in this workspace.
-  final List<LayerItem> _layers = [
-    FeatureLayerItem(id: '1', name: 'Roads Network (Vector)'),
-    FeatureLayerItem(id: '2', name: 'Hydrography / Lakes'),
-    TileLayerItem(
-      id: '3',
-      name: 'Satellite Base Imagery',
-      provider: "http://mt0.google.com/vt/lyrs=s&hl=en&x={x}&y={y}&z={z}",
-    ),
-    TileLayerItem(id: '4', name: 'Digital Elevation Model (DEM)', provider: ""),
-  ];
+  final List<LayerItem> _layers = [];
 
   /// The placeholder for current geographic coordinates under the mouse cursor.
   String _cursorCoordinates = 'Lat: 0.00000, Lon: 0.00000';
@@ -51,6 +41,7 @@ class _GisMainWorkspaceState extends State<GisMainWorkspace> with TickerProvider
     String currentScreen = 'panel'; // States: 'panel', 'tile'
 
     while (workflowActive) {
+      if (!mounted) return;
       if (currentScreen == 'panel') {
         final String? selectedType = await showDialog<String>(
           context: context,
